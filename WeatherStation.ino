@@ -17,7 +17,7 @@
  * SCL: 22 - Clock
  * SDA: 21 - Data
  * 
- * Author Travis Eiler
+ * Author Travis Eiler, Hut8.dev
  * Date:  20200422
  */
 
