@@ -8,7 +8,7 @@ The OLED display, and the BME280, both use the [I2C Communications Protocol](htt
 
 ### Components Used:
 ![Individual Components](https://github.com/arcum-omni/WeatherStation/blob/master/Images/components480.jpg)
-* [Espressif ESP32-WROOM-32U DevKitC V4](https://www.amazon.com/MELIFE-ESP32-DevKitC-Development-ESP32-WROOM-32U-Arduino/dp/B0811LGWY2/ref=sr_1_1?dchild=1&keywords=Espressif%2BESP32-WROOM-32U%2BDevKitC%2BV4&qid=1587513843&sr=8-1&th=1)
+* [Espressif ESP32-WROOM-32D DevKitC V4](https://www.amazon.com/MELIFE-ESP32-DevKitC-Development-ESP32-WROOM-32U-Arduino/dp/B0811LGWY2/ref=sr_1_1?dchild=1&keywords=Espressif%2BESP32-WROOM-32U%2BDevKitC%2BV4&qid=1587513843&sr=8-1&th=1)
 * [Kailedi 0.96in 128x64px OLED](https://www.amazon.com/gp/product/B08173WNNP/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1)
 * [Onyehn BMC280](https://www.amazon.com/dp/B07KR24P6P?tag=duckduckgo-d-20&linkCode=osi&th=1&psc=1)
 * [Arduino IDE](https://www.arduino.cc/en/Main/Software)
