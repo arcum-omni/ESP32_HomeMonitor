@@ -1,59 +1,72 @@
 /*
- * Hut8 Weather Station
- * Measures Temperature, Humidity, and Pressure(Altitude)
- * 
- * Author: Travis Eiler
- * Written: 20200420
+ * Simple Weather Station
+ * Displays data on an OLED display.
+ * Publishes data to a simple webpage on a home network.
  * 
  * Brd:  Espressif ESP32-WROOM-32D DevKitC V4
- * Snsr: BME280
- * Lib:  Adafruit BME280 Library 2.0.1
+ * OLED: Kailedi 0.96in Yellow/Blue SSD1306, I2C
+ * Snsr: Ohyehn BME280, I2C
+ * Libs: Adafruit BME280 2.0.1
+ *       Adafruit GFX 1.7.5
+ *       Adafruit SSD1306 2.2.1
+ *       Wifi 1.2.7
  * 
  * GPIO (Sensor/Board)
- * VIN: 3V3
- * GND: GND
- * SCL: 22
- * SDA: 21
+ * VIN: 3V3 - Power
+ * GND: GND - Ground
+ * SCL: 22 - Clock
+ * SDA: 21 - Data
  * 
- * 
- * Reference(s):
- * https://lastminuteengineers.com/bme280-esp32-weather-station/
+ * Author Travis Eiler
+ * Date:  20200422
  */
- 
-#include <WiFi.h>
-#include <WebServer.h>
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
 
-#define SEALEVELPRESSURE_HPA (1013.250)
+#include <Adafruit_BME280.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <WebServer.h>  // ? Necessity
+#include <WiFi.h>
+#include <Wire.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET 4 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SEALEVELPRESSURE_HPA (1013.250) // 1atm = 760mmHg = 29.9212inHg = 14.696psi = 1013.250hPa
 
 Adafruit_BME280 bme;
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+WebServer server(80);
 
-float temperature, tempC, tempF, humidity, pressure, presPa, presInHg, altitude, altM, altFt;
+// SSID & Password from "YOUR" local network
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
 
-/*Put your SSID & Password*/
-const char* ssid = "YOUR_SSID";  // Enter SSID here
-const char* password = "YOUR_PASSWORD";  //Enter Password here
+float tempC, tempF;
+float humidity;
+float presPa, presInHg;
+float altM, altFt;
 
-WebServer server(80);             
- 
 void setup() {
   Serial.begin(115200);
   delay(100);
-  
-  bme.begin(0x76);   
+  Wire.begin();
+  delay(100);
+  bme.begin(0x76);
 
-  Serial.println("Connecting to ");
+  Serial.println("Starting OLED Display");
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
+  Serial.print("Establishing connection to ");
   Serial.println(ssid);
-
-  //connect to your local wi-fi network
   WiFi.begin(ssid, password);
 
-  //check wi-fi is connected to wi-fi network
   while (WiFi.status() != WL_CONNECTED) {
-  delay(1000);
-  Serial.print(".");
+    delay(1000);
+    Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi connected..!");
@@ -66,40 +79,65 @@ void setup() {
   server.begin();
   Serial.println("HTTP server started");
 
+  Serial.println("Startup Complete");
 }
+
 void loop() {
+  displayMeteorologicalData();
+  display.display();
   server.handleClient();
 }
 
-void handle_OnConnect() {
-  tempC = bme.readTemperature();
-  tempF = tempC * 1.8 + 32; // F=1.8*C+32
-  temperature = tempF;
-  
-  humidity = bme.readHumidity();
+void displayMeteorologicalData(){
+  // Allow Sensor To Stabilize
+  delay(2000);
 
+  tempC = bme.readTemperature();
+  tempF = tempC * 1.8 + 32.0;
+  humidity = bme.readHumidity();
   presPa = bme.readPressure();
   presInHg = presPa / 3386.3887;
-  pressure = presInHg;
-  
-  altM = bme.readAltitude(SEALEVELPRESSURE_HPA);
+  altM = bme.readAltitude(SEALEVELPRESSURE_HPA); // Altitude in meters
   altFt = altM * 3.28084; // 3.28084 ft/m
-  altitude = altFt;
 
-  server.send(200, "text/html", SendHTML(temperature,humidity,pressure,altitude)); 
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.print("Hut8 Weather Station");
+  display.setCursor(21,9);
+  display.print("ESP32 & BME280");
+  display.setCursor(0,20);
+  display.print("TEMP: ");
+  display.print(tempF);
+  display.print(" F");
+  display.setCursor(0,32);
+  display.print("RH:   ");
+  display.print(humidity);
+  display.print(" %");
+  display.setCursor(0,44);
+  display.print("ATM:  ");
+  display.print(presInHg);
+  display.print(" inHg");
+  display.setCursor(0,56);
+  display.print("ALT:  ");
+  display.print(altFt);
+  display.print(" ft");
+}
+
+void handle_OnConnect() {
+  server.send(200, "text/html", SendHTML(tempF,humidity,presInHg,altFt)); 
 }
 
 void handle_NotFound(){
   server.send(404, "text/plain", "Not found");
 }
 
-String SendHTML(float temperature,float humidity,float pressure,float altitude){
+String SendHTML(float tempF,float humidity,float presInHg,float altFt){
   String ptr = "<!DOCTYPE html>";
   ptr +="<html>";
-  
   ptr +="<head>";
-  ptr +="<title>ESP32 Weather Station</title>";
-  ptr +="<title>ESP32 Weather Station</title>";
+  ptr +="<title>ESP32_2</title>";
   ptr +="<meta name='viewport' content='width=device-width, initial-scale=1.0'>";
   ptr +="<link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600' rel='stylesheet'>";
   ptr +="<style>";
@@ -120,10 +158,10 @@ String SendHTML(float temperature,float humidity,float pressure,float altitude){
   ptr +="</style>";
   ptr +="</head>";
   ptr +="<body>";
-  ptr +="<h1>ESP32 Weather Station</h1>";
-  ptr +="<a href=\"https://www.hut8.dev\">www.hut8.dev</a>";
+  ptr +="<h1 style=\"margin-bottom: 0px;\">Hut8 Weather Station</h1>";
+  ptr +="<h2 style=\"margin-top: 0px;\">ESP32 Board #2</h2>";
   ptr +="<div class='container'>";
-  ptr +="<div class='data temperature'>";
+  ptr +="<div class='data temperature' style='padding-top: 0px; padding-bottom: 0px;'>";
   ptr +="<div class='side-by-side icon'>";
   ptr +="<svg enable-background='new 0 0 19.438 54.003'height=54.003px id=Layer_1 version=1.1 viewBox='0 0 19.438 54.003'width=19.438px x=0px xml:space=preserve xmlns=http://www.w3.org/2000/svg xmlns:xlink=http://www.w3.org/1999/xlink y=0px><g><path d='M11.976,8.82v-2h4.084V6.063C16.06,2.715,13.345,0,9.996,0H9.313C5.965,0,3.252,2.715,3.252,6.063v30.982";
   ptr +="C1.261,38.825,0,41.403,0,44.286c0,5.367,4.351,9.718,9.719,9.718c5.368,0,9.719-4.351,9.719-9.718";
@@ -133,10 +171,10 @@ String SendHTML(float temperature,float humidity,float pressure,float altitude){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Temperature</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(int)temperature;
+  ptr +=(float)tempF;
   ptr +="<span class='superscript'>&deg;F</span></div>";
   ptr +="</div>";
-  ptr +="<div class='data humidity'>";
+  ptr +="<div class='data humidity' style='padding-top: 0px; padding-bottom: 0px;'>";
   ptr +="<div class='side-by-side icon'>";
   ptr +="<svg enable-background='new 0 0 29.235 40.64'height=40.64px id=Layer_1 version=1.1 viewBox='0 0 29.235 40.64'width=29.235px x=0px xml:space=preserve xmlns=http://www.w3.org/2000/svg xmlns:xlink=http://www.w3.org/1999/xlink y=0px><path d='M14.618,0C14.618,0,0,17.95,0,26.022C0,34.096,6.544,40.64,14.618,40.64s14.617-6.544,14.617-14.617";
   ptr +="C29.235,17.95,14.618,0,14.618,0z M13.667,37.135c-5.604,0-10.162-4.56-10.162-10.162c0-0.787,0.638-1.426,1.426-1.426";
@@ -145,10 +183,10 @@ String SendHTML(float temperature,float humidity,float pressure,float altitude){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Humidity</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(int)humidity;
+  ptr +=(float)humidity;
   ptr +="<span class='superscript'>%</span></div>";
   ptr +="</div>";
-  ptr +="<div class='data pressure'>";
+  ptr +="<div class='data pressure' style='padding-top: 0px; padding-bottom: 0px;'>";
   ptr +="<div class='side-by-side icon'>";
   ptr +="<svg enable-background='new 0 0 40.542 40.541'height=40.541px id=Layer_1 version=1.1 viewBox='0 0 40.542 40.541'width=40.542px x=0px xml:space=preserve xmlns=http://www.w3.org/2000/svg xmlns:xlink=http://www.w3.org/1999/xlink y=0px><g><path d='M34.313,20.271c0-0.552,0.447-1,1-1h5.178c-0.236-4.841-2.163-9.228-5.214-12.593l-3.425,3.424";
   ptr +="c-0.195,0.195-0.451,0.293-0.707,0.293s-0.512-0.098-0.707-0.293c-0.391-0.391-0.391-1.023,0-1.414l3.425-3.424";
@@ -162,10 +200,10 @@ String SendHTML(float temperature,float humidity,float pressure,float altitude){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Pressure</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(float)pressure;
+  ptr +=(float)presInHg;
   ptr +="<span class='superscript'>inHg</span></div>";
   ptr +="</div>";
-  ptr +="<div class='data altitude'>";
+  ptr +="<div class='data altitude' style='padding-top: 0px; padding-bottom: 0px;'>";
   ptr +="<div class='side-by-side icon'>";
   ptr +="<svg enable-background='new 0 0 58.422 40.639'height=40.639px id=Layer_1 version=1.1 viewBox='0 0 58.422 40.639'width=58.422px x=0px xml:space=preserve xmlns=http://www.w3.org/2000/svg xmlns:xlink=http://www.w3.org/1999/xlink y=0px><g><path d='M58.203,37.754l0.007-0.004L42.09,9.935l-0.001,0.001c-0.356-0.543-0.969-0.902-1.667-0.902";
   ptr +="c-0.655,0-1.231,0.32-1.595,0.808l-0.011-0.007l-0.039,0.067c-0.021,0.03-0.035,0.063-0.054,0.094L22.78,37.692l0.008,0.004";
@@ -177,10 +215,11 @@ String SendHTML(float temperature,float humidity,float pressure,float altitude){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Altitude</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(int)altitude;
+  ptr +=(float)altFt;
   ptr +="<span class='superscript'>ft</span></div>";
   ptr +="</div>";
   ptr +="</div>";
+  ptr +="<p>Hut8.dev, April 2020</p>";
   ptr +="</body>";
   ptr +="</html>";
   return ptr;
