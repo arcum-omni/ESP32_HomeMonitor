@@ -6,6 +6,8 @@
  * Brd:  Espressif ESP32-WROOM-32D DevKitC V4
  * OLED: Kailedi 0.96in Yellow/Blue SSD1306, I2C
  * Snsr: Ohyehn BME280, I2C
+ * IDE:  Arduino IDE
+ *       https://www.arduino.cc/reference/en/#structure
  * Libs: Adafruit BME280 2.0.1
  *       Adafruit GFX 1.7.5
  *       Adafruit SSD1306 2.2.1
@@ -17,43 +19,60 @@
  * SCL: 22 - Clock
  * SDA: 21 - Data
  * 
- * Author Travis Eiler, Hut8.dev
+ * Author Travis Eiler
  * Date:  20200422
  */
 
+// BME280 Sensor Library
 #include <Adafruit_BME280.h>
+
+// Graphics Library for OLED
 #include <Adafruit_GFX.h>
+
+// SSD1306 OLED Chip Driver Library
 #include <Adafruit_SSD1306.h>
-#include <WebServer.h>  // ? Necessity
+
+// WebServer Library
+#include <WebServer.h>
+
+// WiFi Connectivity Library
 #include <WiFi.h>
+
+// I2C Protocol Library
 #include <Wire.h>
 
+// Declare Constants
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET 4 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SEALEVELPRESSURE_HPA (1013.250) // 1atm = 760mmHg = 29.9212inHg = 14.696psi = 1013.250hPa
+#define ssid "YOUR_SSID" // SSID from "YOUR" local network
+#define password "YOUR_PASSWORD" // Password for "YOUR" local network
 
+// Instantiate Objects
 Adafruit_BME280 bme;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WebServer server(80);
 
-// SSID & Password from "YOUR" local network
-const char* ssid = "YOUR_SSID";
-const char* password = "YOUR_PASSWORD";
-
+// Declare Variables
 float tempC, tempF;
 float humidity;
 float presPa, presInHg;
 float altM, altFt;
 
-void setup() {
+
+/*
+ * The setup() function is called when a sketch starts.
+ * The setup() function will only run once, after each powerup or reset of the Arduino board.
+ */
+void setup() {  
   Serial.begin(115200);
   delay(100);
   Wire.begin();
   delay(100);
   bme.begin(0x76);
 
-  Serial.println("Starting OLED Display");
+  Serial.println("Device Startup Initiated");
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -79,9 +98,16 @@ void setup() {
   server.begin();
   Serial.println("HTTP server started");
 
-  Serial.println("Startup Complete");
+  Serial.println("Device Startup Complete");
+  Serial.println();
 }
 
+/*
+ * After creating a setup() function,
+ * the loop() function loops consecutively, 
+ * allowing your program to change and respond. 
+ * Use it to actively control the Arduino board.
+ */
 void loop() {
   displayMeteorologicalData();
   display.display();
@@ -89,7 +115,7 @@ void loop() {
 }
 
 void displayMeteorologicalData(){
-  // Allow Sensor To Stabilize
+  // Allow BME280 to stabilize
   delay(2000);
 
   tempC = bme.readTemperature();
@@ -106,7 +132,7 @@ void displayMeteorologicalData(){
   display.setCursor(0,0);
   display.print("Hut8 Weather Station");
   display.setCursor(21,9);
-  display.print("ESP32 & BME280");
+  display.print("ESP32 Board #2");
   display.setCursor(0,20);
   display.print("TEMP: ");
   display.print(tempF);
@@ -133,7 +159,7 @@ void handle_NotFound(){
   server.send(404, "text/plain", "Not found");
 }
 
-String SendHTML(float tempF,float humidity,float presInHg,float altFt){
+String SendHTML(float temp,float humi,float pres,float alti){
   String ptr = "<!DOCTYPE html>";
   ptr +="<html>";
   ptr +="<head>";
@@ -171,7 +197,7 @@ String SendHTML(float tempF,float humidity,float presInHg,float altFt){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Temperature</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(float)tempF;
+  ptr +=(float)temp;
   ptr +="<span class='superscript'>&deg;F</span></div>";
   ptr +="</div>";
   ptr +="<div class='data humidity' style='padding-top: 0px; padding-bottom: 0px;'>";
@@ -183,7 +209,7 @@ String SendHTML(float tempF,float humidity,float presInHg,float altFt){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Humidity</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(float)humidity;
+  ptr +=(float)humi;
   ptr +="<span class='superscript'>%</span></div>";
   ptr +="</div>";
   ptr +="<div class='data pressure' style='padding-top: 0px; padding-bottom: 0px;'>";
@@ -200,7 +226,7 @@ String SendHTML(float tempF,float humidity,float presInHg,float altFt){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Pressure</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(float)presInHg;
+  ptr +=(float)pres;
   ptr +="<span class='superscript'>inHg</span></div>";
   ptr +="</div>";
   ptr +="<div class='data altitude' style='padding-top: 0px; padding-bottom: 0px;'>";
@@ -215,7 +241,7 @@ String SendHTML(float tempF,float humidity,float presInHg,float altFt){
   ptr +="</div>";
   ptr +="<div class='side-by-side text'>Altitude</div>";
   ptr +="<div class='side-by-side reading'>";
-  ptr +=(float)altFt;
+  ptr +=(float)alti;
   ptr +="<span class='superscript'>ft</span></div>";
   ptr +="</div>";
   ptr +="</div>";
