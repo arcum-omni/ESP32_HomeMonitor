@@ -1,7 +1,7 @@
 # WeatherStation:
-A simple home weather station created with an Espressif ESP32 Developer Board and a BME280 sensor. When loaded with the BME280_HTE.ino program loaded, it turns the ESP32 into a wifi station on my home network, and publishes a simple website which displays the simple weather station data. I also connected an 128x64px OLED display to show the sensor data on the unit itself.
+A simple home weather station created with an Espressif ESP32 Developer Board and a BME280 sensor. When the WeatherStation.ino program is loaded, it turns the ESP32 into a wifi station on my home network, and publishes a simple website which displays the simple weather station data, and redundantly displays the data on an 128x64px OLED display mounted next to the board.
 
-The OLED display, and the BME280, both use the [I2C Communications Protocol](https://en.wikipedia.org/wiki/I%C2%B2C).  You may notice they both connect to the same pins on the ESP32.  The I2C protocol allows us to attach a lot of [IoT](https://en.wikipedia.org/wiki/Internet_of_things) to a device, more devices that GPIO pins.
+The OLED display, and the BME280, both use the [I2C Communications Protocol](https://en.wikipedia.org/wiki/I%C2%B2C).  You may notice they both connect to the same pins on the ESP32.  The I2C protocol allows us to attach a lot of [IoT](https://en.wikipedia.org/wiki/Internet_of_things) sensors to a device, more sensors than the device has GPIO pins.
 
 ![Weather Station Screen Shot](https://github.com/arcum-omni/WeatherStation/blob/master/Images/screenshot480.jpg)
 ![OLED Display](https://raw.githubusercontent.com/arcum-omni/WeatherStation/master/Images/oled480.jpg)
@@ -15,4 +15,5 @@ The OLED display, and the BME280, both use the [I2C Communications Protocol](htt
 ### Breadboard with Components as Tested:
 
 ![Breadboard](https://github.com/arcum-omni/WeatherStation/blob/master/Images/breadBoard480.jpg)
-![Breadboard2](https://raw.githubusercontent.com/arcum-omni/WeatherStation/master/Images/breadBoard2-480.jpg)
+![Breadboard2](https://raw.githubusercontent.com/arcum-omni/WeatherStation/master/Images/breadBoard2-480.jpg)<br>
+I removed the sensor from the breadboard, and used dupont wires to install the sensor up in the air to increase the responsiveness of the sensor.
