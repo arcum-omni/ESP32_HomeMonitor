@@ -1,7 +1,10 @@
 # WeatherStation:
-A simple home weather station created with an Espressif ESP32 Developer Board and a BME280 sensor.
+A simple home weather station created with an Espressif ESP32 Developer Board and a BME280 sensor. When loaded with the BME280_HTE.ino program loaded, it turns the ESP32 into a wifi station on my home network, and publishes a simple website which displays the simple weather station data. I also connected an 128x64px OLED display to show the sensor data on the unit itself.
+
+The OLED display, and the BME280, both use the [I2C Communications Protocol](https://en.wikipedia.org/wiki/I%C2%B2C).  You may notice they both connect to the same pins on the ESP32.  The I2C protocol allows us to attach a lot of [IoT](https://en.wikipedia.org/wiki/Internet_of_things) to a device, more devices that GPIO pins.
 
 ![Weather Station Screen Shot](https://github.com/arcum-omni/WeatherStation/blob/master/Images/screenshot480.jpg)
+![OLED Display](https://raw.githubusercontent.com/arcum-omni/WeatherStation/master/Images/oled480.jpg)
 
 ### Components Used:
 ![Individual Components](https://github.com/arcum-omni/WeatherStation/blob/master/Images/components480.jpg)
@@ -9,8 +12,7 @@ A simple home weather station created with an Espressif ESP32 Developer Board an
 * [Onyehn BMC280](https://www.amazon.com/dp/B07KR24P6P?tag=duckduckgo-d-20&linkCode=osi&th=1&psc=1)
 * [Arduino IDE](https://www.arduino.cc/en/Main/Software)
 
-
-
 ### Breadboard with Components as Tested:
 
-![Bread Board](https://github.com/arcum-omni/WeatherStation/blob/master/Images/breadBoard480.jpg)
+![Breadboard](https://github.com/arcum-omni/WeatherStation/blob/master/Images/breadBoard480.jpg)
+![Breadboard2](https://raw.githubusercontent.com/arcum-omni/WeatherStation/master/Images/breadBoard2-480.jpg)
