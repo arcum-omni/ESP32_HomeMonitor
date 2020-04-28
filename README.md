@@ -6,11 +6,11 @@ I expanded the project to include an OLED display to mount on the monitoring sta
 This project has grown beyond the original weather monitoring to more of a home monitoring station now.  I added a lux sensor to measure illuminance, ie brightness, and added a white LED and created a night light. Next I want to add a motion sensor to model a security light.
 
 However, I couldn't stop at just one LED so I added red, yellow, green, and blue LEDs to act as indicator lights.
-* WHT: a night light
-* BLU: a humidity indicator
-* GRN: ideal home conditions indicator (when the temp & humidity are both in an ideal range)
-* YLW: storm indicator (barometric pressure)
-* RED: temperature indicator
+* WHT: Security Light Indicator
+* BLU: Humidity Indicator
+* GRN: Ideal Home Conditions Indicator (when the temp & humidity are both in an ideal range)
+* YLW: Storm Indicator (barometric pressure)
+* RED: Temperature Indicator
 
 After switching LED's I wanted to switch something with more power that the board could handle, so I added a relay.  Here is a [link to a video on YouTube](https://youtu.be/Q5VHymcigyg) of my project working as a thermostat. I attached a relay to control a 1500W heat gun, and used data provided by the temperature sensor, and a little logic.  When the temp of the sensor falls below 75°F the relay is closed and the heat gun is powered up.  When the temperature goes above 80°F the red LED is powered, and the relay is opened.
 
@@ -28,7 +28,6 @@ After switching LED's I wanted to switch something with more power that the boar
 * [SunFounder Breadboards Kit](https://www.amazon.com/gp/product/B082KBF7MM/ref=ppx_yo_dt_b_asin_title_o05_s01?ie=UTF8&psc=1)
 
 ### Breadboard with Components as Tested:
-
 The initial impelmentaiton:<br>
 ![Breadboard](https://github.com/arcum-omni/WeatherStation/blob/master/Images/breadBoard480.jpg)
 
