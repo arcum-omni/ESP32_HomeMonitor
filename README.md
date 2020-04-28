@@ -3,7 +3,7 @@ Originally this project was to create a simple home weather station. To accompli
 
 I expanded the project to include an OLED display to mount on the monitoring station to display the data on the unit itself. The OLED display, and the BME280, both use the [I2C Communications Protocol](https://en.wikipedia.org/wiki/I%C2%B2C).  You may notice both sensors connect to the same GPIO pins on the ESP32.  The I2C protocol allows a developer to attach more [IoT](https://en.wikipedia.org/wiki/Internet_of_things) sensors to a device, than the device has GPIO pins.
 
-This project has grown beyond the original weather monitoring to more of a home monitoring station now.  I added a sensor to measure luminosity. I also added a white LED and created a night light.
+This project has grown beyond the original weather monitoring to more of a home monitoring station now.  I added a lux sensor to measure illuminance, ie brightness, and added a white LED and created a night light. Next I want to add a motion sensor to model a security light.
 
 However, I couldn't stop at just one LED so I added red, yellow, green, and blue LEDs to act as indicator lights.
 * WHT: a night light
